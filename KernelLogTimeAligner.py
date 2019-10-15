@@ -46,7 +46,6 @@ class KernelLogTimeAligner:
 
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
-                line = line.strip()
                 try:
                     self.timestr_length = self.determine_time_string_length(line)
                     break
@@ -54,10 +53,8 @@ class KernelLogTimeAligner:
                     eprint(e)
                     pass
 
-
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
-                line = line.strip()
                 if line.startswith(SWITCH_PREFIX):
                     if self.buffer != self.get_buffer(line):
                         self.buffer = self.get_buffer(line)
@@ -66,13 +63,12 @@ class KernelLogTimeAligner:
                     if self.last_time is not None:
                         pass
                         line = self.replace_time(line, self.last_time)
-                else:
-                    if line != '\x1a':  # ^Z
-                        try:
-                            self.last_time = self.parse_time(line)
-                        except ValueError as e:
-                            eprint(e)
-                print(line)
+                elif line != '\x1a':  # ^Z
+                    try:
+                        self.last_time = self.parse_time(line)
+                    except ValueError as e:
+                        eprint(e)
+                self.output(line)
 
     def parse_time(self, time_string):
         time_string = time_string[:self.timestr_length]  # len("01-09 12:23:36.123") = 18
@@ -119,6 +115,10 @@ class KernelLogTimeAligner:
             return True
         else:
             return False
+
+    @staticmethod
+    def output(*args, **kwargs):
+        print(*args, file=sys.stdout, **kwargs, end='')
 
 
 if __name__ == '__main__':

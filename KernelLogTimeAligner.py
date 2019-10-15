@@ -34,7 +34,7 @@ class KernelLogTimeAligner:
 
     def __init__(self):
         self.state = self.State.NORMAL
-        self.ENCODING = "ISO-8859-15"
+        self.ENCODING = "UTF-8"
         self.buffer = None
         self.last_time = None
         self.timestr_length = None

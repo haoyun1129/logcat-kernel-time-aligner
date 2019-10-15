@@ -62,7 +62,7 @@ class KernelLogTimeAligner:
                     if self.buffer != self.get_buffer(line):
                         self.buffer = self.get_buffer(line)
                         # print("switch to buffer", self.buffer, line)
-                elif self.buffer == "kernel":
+                elif self.buffer == "kernel" or self.is_kernel_log(line):
                     if self.last_time is not None:
                         pass
                         line = self.replace_time(line, self.last_time)
@@ -109,6 +109,17 @@ class KernelLogTimeAligner:
             time_string = line[:18]
             dt_obj = datetime.strptime(time_string, TIMESTAMP_FORMAT)
             return 18
+
+    @staticmethod
+    def is_kernel_log(line):
+        splits = line.split()
+        if len(splits) < 4:
+            return False
+        if splits[2] == '0' and splits[3] == '0':
+            return True
+        else:
+            return False
+
 
 if __name__ == '__main__':
     ja = KernelLogTimeAligner()

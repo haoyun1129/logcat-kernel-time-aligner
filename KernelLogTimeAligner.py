@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from __future__ import print_function
 from contextlib import closing
 import fileinput
 import sys
@@ -11,6 +12,10 @@ if sys.version_info[0] < 3:
 
 SWITCH_PREFIX = '---------'
 TIMESTAMP_FORMAT = '%m-%d %H:%M:%S.%f'
+
+
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 
 class KernelLogTimeAligner:
@@ -42,9 +47,13 @@ class KernelLogTimeAligner:
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
                 line = line.strip()
-                if not line.startswith(SWITCH_PREFIX):
+                try:
                     self.timestr_length = self.determine_time_string_length(line)
                     break
+                except ValueError as e:
+                    eprint(e)
+                    pass
+
 
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
@@ -59,7 +68,10 @@ class KernelLogTimeAligner:
                         line = self.replace_time(line, self.last_time)
                 else:
                     if line != '\x1a':  # ^Z
-                        self.last_time = self.parse_time(line)
+                        try:
+                            self.last_time = self.parse_time(line)
+                        except ValueError as e:
+                            eprint(e)
                 print(line)
 
     def parse_time(self, time_string):

@@ -56,12 +56,9 @@ class KernelLogTimeAligner:
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
                 if line.startswith(SWITCH_PREFIX):
-                    if self.buffer != self.get_buffer(line):
-                        self.buffer = self.get_buffer(line)
-                        # print("switch to buffer", self.buffer, line)
-                elif self.buffer == "kernel" or self.is_kernel_log(line):
+                    pass
+                elif self.is_kernel_log(line):
                     if self.last_time is not None:
-                        pass
                         line = self.replace_time(line, self.last_time)
                 elif line != '\x1a':  # ^Z
                     try:

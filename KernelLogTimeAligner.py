@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import print_function
-from contextlib import closing
-import fileinput
-import sys
+
 import argparse
+import fileinput
+import os
+import sys
+from contextlib import closing
 from datetime import datetime
 from enum import Enum
+
+from tqdm import tqdm
 
 if sys.version_info[0] < 3:
     raise Exception("Python 3 or a more version is required.")
@@ -54,7 +58,10 @@ class KernelLogTimeAligner:
                     pass
 
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
+            stat = os.stat(args.file)
+            pbar = tqdm(total=stat.st_size, unit='B', unit_scale=True, unit_divisor=1024)
             for line in finput:
+                pbar.update(len(line))
                 if line.startswith(SWITCH_PREFIX):
                     pass
                 elif self.is_kernel_log(line):
@@ -66,6 +73,7 @@ class KernelLogTimeAligner:
                     except ValueError as e:
                         eprint(e)
                 self.output(line)
+            pbar.close()
 
     def parse_time(self, time_string):
         time_string = time_string[:self.timestr_length]  # len("01-09 12:23:36.123") = 18

@@ -65,6 +65,10 @@ class KernelLogTimeAligner:
             pbar = tqdm(total=stat.st_size, unit='B', unit_scale=True, unit_divisor=1024)
             for line in finput:
                 pbar.update(len(line))
+                if line.startswith('\x00'):
+                    eprint('\\x00: before:', line)
+                    line = line.strip('\x00')
+                    eprint('\\x00: after :', line)
                 if line.startswith(SWITCH_PREFIX):
                     if self.remove_sep:
                         continue

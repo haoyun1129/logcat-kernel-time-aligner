@@ -42,11 +42,14 @@ class KernelLogTimeAligner:
         self.buffer = None
         self.last_time = None
         self.timestr_length = None
+        self.remove_sep = False
 
     def analyze(self):
         parser = argparse.ArgumentParser()
         parser.add_argument('file', metavar='FILE', help='files to read, if empty, stdin is used', default=sys.stdin)
+        parser.add_argument('--remove-sep', help='Remove the separator --------- ..." ', action='store_true')
         args = parser.parse_args()
+        self.remove_sep = args.remove_sep
 
         with closing(fileinput.input(args.file, openhook=fileinput.hook_encoded(self.ENCODING))) as finput:
             for line in finput:
@@ -63,6 +66,8 @@ class KernelLogTimeAligner:
             for line in finput:
                 pbar.update(len(line))
                 if line.startswith(SWITCH_PREFIX):
+                    if self.remove_sep:
+                        continue
                     pass
                 elif self.is_kernel_log(line):
                     if self.last_time is not None:

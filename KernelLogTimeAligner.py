@@ -65,14 +65,14 @@ class KernelLogTimeAligner:
             pbar = tqdm(total=stat.st_size, unit='B', unit_scale=True, unit_divisor=1024)
             for line in finput:
                 pbar.update(len(line))
-                if line.startswith('\x00'):
-                    eprint('\\x00: before:', line)
-                    line = line.strip('\x00')
-                    eprint('\\x00: after :', line)
                 if line.startswith(SWITCH_PREFIX):
                     if self.remove_sep:
                         continue
                     pass
+                elif line.startswith('\x00'):
+                    eprint('\\x00: before:', line)
+                    line = line.strip('\x00')
+                    eprint('\\x00: after :', line)
                 elif self.is_kernel_log(line):
                     if self.last_time is not None:
                         line = self.replace_time(line, self.last_time)
@@ -81,6 +81,11 @@ class KernelLogTimeAligner:
                         self.last_time = self.parse_time(line)
                     except ValueError as e:
                         eprint(e)
+
+                if not line.startswith(SWITCH_PREFIX) and (SWITCH_PREFIX + "beginning of ") in line:
+                    eprint(SWITCH_PREFIX + ': before:', line)
+                    line = line.replace(SWITCH_PREFIX, '\n' + SWITCH_PREFIX)
+                    eprint(SWITCH_PREFIX + ': after :', line)
                 self.output(line)
             pbar.close()
 
